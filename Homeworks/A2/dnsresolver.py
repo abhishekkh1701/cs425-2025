@@ -24,6 +24,7 @@ def send_dns_query(server, domain):
         query = dns.message.make_query(domain, dns.rdatatype.A)  # Construct the DNS query
         # TODO: Send the query using UDP 
         # Note that above TODO can be just a return statement with the UDP query!
+        return dns.query.udp(query, server)   #using UDP to send query
     except Exception:
         return None  # If an error occurs (timeout, unreachable server, etc.), return None
 
@@ -46,6 +47,14 @@ def extract_next_nameservers(response):
 
     # TODO: Resolve the extracted NS hostnames to IP addresses
     # To TODO, you would have to write a similar loop as above
+    for ns_name in ns_names:
+        try:
+            answers = dns.resolver.resolve(ns_name, 'A')  # Resolving ns_name i.e. hostname in response to get its IP address using dns.resolver
+            for ip in answers:
+                ns_ips.append(ip.to_text())  # Appending resolved IP
+                
+        except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout) as e:
+            print(f"Could not resolve {ns_name}: {e}") # did this to handle exception
 
     
     return ns_ips  # Return list of resolved nameserver IPs
@@ -76,6 +85,11 @@ def iterative_dns_lookup(domain):
             # If no answer, extract the next set of nameservers
             next_ns_list = extract_next_nameservers(response)
             # TODO: Move to the next resolution stage, i.e., it is either TLD, ROOT, or AUTH
+            if stage == "ROOT" :
+                stage = "TLD"
+            elif stage == "TLD" :
+                stage = "AUTH"
+            # wrote the above lines by using the flow i.e. ROOT->TLD->AUTH
         else:
             print(f"[ERROR] Query failed for {stage} {ns_ip}")
             return  # Stop resolution if a query fails
@@ -92,6 +106,7 @@ def recursive_dns_lookup(domain):
     try:
         # TODO: Perform recursive resolution using the system's DNS resolver
         # Notice that the next line is looping through, therefore you should have something like answer = ??
+        answer = dns.resolver.resolve(domain, "NS")  # getting NS responses using dns.resolver
         for rdata in answer:
             print(f"[SUCCESS] {domain} -> {rdata}")
 
