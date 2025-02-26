@@ -52,6 +52,7 @@ def extract_next_nameservers(response):
             answers = dns.resolver.resolve(ns_name, 'A')  # Resolving ns_name i.e. hostname in response to get its IP address using dns.resolver
             for ip in answers:
                 ns_ips.append(ip.to_text())  # Appending resolved IP
+                print(f"Resolved {ns_name} to {ip.to_text()}")
                 
         except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout) as e:
             print(f"Could not resolve {ns_name}: {e}") # did this to handle exception
