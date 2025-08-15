@@ -1,0 +1,203 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+% Header and Footer
+\pagestyle{fancy}
+\lhead{\textbf{CS425: Computer Networks}}
+\chead{}
+\rhead{A4: Routing Protocols (DVR and LSR)}
+\lfoot{Instructor: \textbf{Adithya Vadapalli}}
+\cfoot{}
+\rfoot{TA Incharge: \textbf{Rishit and Yugul}}
+
+% Define custom colors
+\definecolor{keywordcolor}{rgb}{0.0, 0.0, 0.7} % Blue for keywords
+\definecolor{stringcolor}{rgb}{0.58, 0.0, 0.82} % Purple for strings
+\definecolor{commentcolor}{rgb}{0.0, 0.5, 0.0} % Green for comments
+\definecolor{numbercolor}{rgb}{0.5, 0.5, 0.5} % Gray for numbers
+\definecolor{backgroundcolor}{rgb}{0.95, 0.95, 0.95} % Light gray for background
+
+% Set up listings style
+\lstset{
+    language=C++,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    stringstyle=\color{stringcolor},
+    commentstyle=\color{commentcolor}\itshape,
+    numberstyle=\tiny\color{numbercolor},
+    backgroundcolor=\color{backgroundcolor},
+    breaklines=true,
+    showstringspaces=false,
+    numbers=left,
+    frame=single,
+    captionpos=b,
+    xleftmargin=10pt,
+    xrightmargin=10pt,
+    rulecolor=\color{black},
+}
+
+\begin{document}
+
+% Title Page
+\begin{titlepage}
+    \centering
+    \vspace{2cm}
+    %\includegraphics[width=0.3\textwidth]{iitk_logo.png} % Placeholder for IITK Logo
+    \vspace{1cm}
+
+    {\Huge \textbf{Assignment 4}}\\[1cm]
+    {\Large \textbf{Routing Protocols}}\\[2cm]
+
+    \textbf{Course: CS425: Computer Networks}\\[0.5cm]
+    \textbf{Instructor:  Adithya Vadapalli }\\[0.5cm]
+    \textbf{TAs Incharge: Rishit and Yugul}\\[3cm]
+
+    \vfill
+    \textbf{Submission Deadline: 21.04.2025, EOD}\\[0.5cm]
+    \vfill
+
+\end{titlepage}
+
+\section*{Objective}
+The objective of this assignment is to implement the \emph{Distance Vector Routing (DVR)} and \emph{Link State Routing (LSR)} algorithms in \texttt{C++} using an adjacency matrix as input. The goal is to simulate the operation of both algorithms in a network with a given set of nodes and links. The assignment will (hopefully!) help you understand the workings of two fundamental routing algorithms and how they compute the optimal path between nodes.
+You can download the assignment from GitHub repository: \url{https://github.com/privacy-iitk/cs425-2025.git}. In the repository, you will find a \texttt{Makefile}, an incomple \texttt{routing\_sim.cpp} file, and several possible input files. Your task is to complete the cpp file. 
+
+
+
+\section*{Background}
+Distance Vector Routing (DVR) and Link State Routing (LSR) are two common routing algorithms used in computer networks for finding the shortest paths between nodes in a graph. Both algorithms are based on a graph where the nodes represent routers or computers, and the edges represent links with a given cost or metric.
+ 
+\subsection*{Distance Vector Routing (DVR)}
+In the DVR algorithm, each router maintains a routing table that contains the best-known cost to reach each destination node. The table is periodically updated based on the information received from its neighbors. The primary challenge in DVR is to prevent routing loops, which can occur when routers continuously update their tables with incorrect information.
+
+\subsection*{Link State Routing (LSR)}
+LSR, on the other hand, works by having each router discover the entire network topology. Each router broadcasts its link-state information (its neighbors and their respective costs) to all other routers in the network. Using this information, each router runs Dijkstra's algorithm to compute the shortest path to every other router.
+
+\section*{Assignment Description}
+In this assignment, you will be simulating both the \emph{Distance Vector Routing (DVR)} and \emph{Link State Routing (LSR)} algorithms for a given network. The input will be a graph represented as an adjacency matrix, and the routing metric will be provided as either \emph{bandwidth} or \emph{latency} (or any other user-defined metric).
+
+Your task is to implement the simulation of both algorithms and produce the corresponding routing tables for each node.
+
+\subsection*{Input Format}
+The program will read an adjacency matrix from a file. The adjacency matrix represents the links between nodes and the associated metric (e.g., bandwidth, latency). 
+
+\begin{itemize}
+    \item The first line of the file contains an integer \( n \), the number of nodes in the network.
+    \item The next \( n \) lines contain \( n \) space-separated integers, representing the adjacency matrix where the \( i^{th} \) row and \( j^{th} \) column entry corresponds to the metric (e.g., cost, bandwidth, latency) of the link between node \( i \) and node \( j \).
+    \item A value of \( 0 \) indicates no cost or no link between the nodes.
+    \item A value of \( 9999 \) will be used to represent an unreachable link (or infinite cost).
+\end{itemize}
+
+\textbf{Example Input File (`inputfile.txt`):}
+
+\begin{verbatim}
+4 
+0 10 100 30 
+10 0 20 40 
+100 20 0 10 
+30 40 10 0
+\end{verbatim}
+
+In this example, there are 4 nodes, and the adjacency matrix specifies the metric (cost, bandwidth, etc.) for each link.
+
+\subsection*{Output Format}
+The output of the program will be the routing tables for each node after running the \emph{Distance Vector Routing (DVR)} and \emph{Link State Routing (LSR)} algorithms. 
+
+\begin{itemize}
+    \item For DVR: Print the routing table for each node at each iteration, showing the destination node, the computed metric, and the next hop node.
+    \item For LSR: After computing the shortest paths using Dijkstra's algorithm, print the routing table for each node, showing the destination node, the computed metric, and the next hop node.
+\end{itemize}
+
+\textbf{Example Output:}
+
+\begin{verbatim}
+--- Distance Vector Routing Simulation ---
+Node 0 Routing Table:
+Dest    Metric    Next Hop
+0         0         -
+1         10        1
+2         100       2
+3         30        3
+
+Node 1 Routing Table:
+Dest    Metric    Next Hop
+0         10        0
+1         0         -
+2         20        2
+3         40        3
+
+--- Link State Routing Simulation ---
+Node 0 Routing Table:
+Dest    Metric    Next Hop
+1         10         1
+2         30         3
+3         30         3
+
+Node 1 Routing Table:
+Dest    Metric    Next Hop
+0         10         0
+2         20         2
+3         40         3
+\end{verbatim}
+
+\section*{Algorithm Requirements}
+
+\subsection*{1. Distance Vector Routing (DVR) Algorithm}
+In the DVR algorithm:
+\begin{itemize}
+    \item Each node starts with its own routing table, which initially contains the direct link cost to each other node.
+    \item Nodes exchange their routing table with their immediate neighbors and update their tables accordingly.
+    \item This process repeats until there are no further updates.
+\end{itemize}
+
+\subsection*{2. Link State Routing (LSR) Algorithm}
+In the LSR algorithm:
+\begin{itemize}
+    \item Each node knows the entire network topology.
+    \item Each node uses \emph{Dijkstra’s algorithm} to compute the shortest path to each other node.
+    \item The result is a routing table that lists the shortest path to every other node in the network.
+\end{itemize}
+
+ 
+
+ 
+\section*{Deliverables}
+Students must submit the following:
+\begin{itemize}
+\item[-] Source code, i.e. the complete \texttt{routing\_sim.cpp}, implementing the simulation.
+\item[-] A README file with instructions on how to run the code. 
+\end{itemize}
+ 
+ 
+ 
+
+ 
+\section*{Submission Instructions}
+\begin{itemize}
+\item[-] Submit a zip file containing the source code README
+\item[-] The filename should be \texttt{A4Rollnumberofmember1Rollnumberofmember2Rollnumberofmember3} 
+\item[-] Upload your submission to HelloIITK before the deadline. Only one team member should submit the assignment. 
+\end{itemize}
+
+
+\section*{Grading Rubric}
+\begin{itemize}
+    \item[-] \textbf{Correctness (80\%)}: The server works as expected and supports all required features.
+    \item[-] \textbf{Code Quality (10\%)}: Comments in the code.
+    \item[-] \textbf{Documentation (10\%)}: Clear instructions and explanation in the README.
+\end{itemize}
+
+\vfill
+\noindent \textbf{Note:} For any clarifications, post a message on Piazza. Ensure all submissions are made before the deadline. Late submissions will incur a penalty as per the course policy.
+%- GUI messup
+%- We don't support sendign messages to offline users
+%- Is server threading
+%- Client Threading
+%- Does server save the messages or immediately send them
+%- presenence of immemory structure that keeps track of socketfd etc. 
+\end{document}
