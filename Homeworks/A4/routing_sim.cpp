@@ -5,7 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-
+#include <set>
 using namespace std;
 
 const int INF = 9999;
@@ -27,8 +27,33 @@ void simulateDVR(const vector<vector<int>>& graph) {
     vector<vector<int>> dist = graph;
     vector<vector<int>> nextHop(n, vector<int>(n));
 
-    //TODO: Complete this
+    
+    // Initialize the nextHop table with -1, indicating no direct path initially
+    for(int i=0;i<n;i++){
+        for(int j=0;j<n;j++) nextHop[i][j] = -1;
+    }
 
+    // Set the nextHop for directly connected nodes
+    for(int i=0;i<n;i++){
+        for(int j=0;j<n;j++){
+            if(i==j) continue; // Skip the same node
+            if(graph[i][j] == INF || graph[i][j] == 0) continue; // Skip if no direct connection
+            nextHop[i][j] = j; // Directly connected nodes have the next hop as the destination itself 
+        }
+    }
+
+    // Floyd-Warshall algorithm to compute shortest paths and update nextHop table
+    for(int k=0;k<n;k++){ // Intermediate node
+        for(int i=0;i<n;i++){ // Source node
+            for(int j=0;j<n;j++){ // Destination node
+                // If a shorter path is found via the intermediate node k
+                if(dist[i][j] > dist[i][k] + dist[k][j]){
+                    dist[i][j] = dist[i][k] + dist[k][j]; // Update the shortest distance
+                    nextHop[i][j] = nextHop[i][k]; // Update the next hop to go through k
+                }
+            }
+        }
+    }
     cout << "--- DVR Final Tables ---\n";
     for (int i = 0; i < n; ++i) printDVRTable(i, dist, nextHop);
 }
@@ -53,9 +78,53 @@ void simulateLSR(const vector<vector<int>>& graph) {
         vector<int> dist(n, INF);
         vector<int> prev(n, -1);
         vector<bool> visited(n, false);
+        // Initialize the distance to the source node as 0
         dist[src] = 0;
+
+        // Use a set to act as a priority queue for Dijkstra's algorithm
+        set<pair<int,int>> pq;
+
+        // Pair to store the current node and its distance
+        pair<int,int> currentPair;
+
+        // Insert the source node with distance 0 into the priority queue
+        pq.insert({0,src});
+
+        // While the priority queue is not empty
+        while(!pq.empty()){
+            // Get the node with the smallest distance
+            currentPair = *pq.begin();
+
+            // Mark the current node as visited
+            visited[currentPair.second] = true;
+
+            // Remove the current node from the priority queue
+            pq.erase(pq.begin());
+
+            // Iterate through all neighbors of the current node
+            for(int i=0;i<n;i++){
+                // If the neighbor is not visited and there is a direct edge
+                if(!visited[i] && graph[currentPair.second][i] != INF && graph[currentPair.second][i] != 0){
+                    // If a shorter path to the neighbor is found
+                    if(dist[i] > dist[currentPair.second] + graph[currentPair.second][i]){
+                        // Remove the old distance of the neighbor from the priority queue
+                        if(dist[i] != INF)
+                            pq.erase({dist[i],i});
+
+                        // Update the distance to the neighbor
+                        dist[i] = dist[currentPair.second] + graph[currentPair.second][i];
+
+                        // Update the previous node for the neighbor
+                        prev[i] = currentPair.second;
+
+                        // Insert the updated distance of the neighbor into the priority queue
+                        pq.insert({dist[i],i});
+                    }
+                }
+            }
+        }
         
-         //TODO: Complete this
+
         
         printLSRTable(src, dist, prev);
     }
